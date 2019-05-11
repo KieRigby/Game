@@ -21,7 +21,7 @@ class Game{
     //get the io object
     let io = socket.server;
     //if the user is not already in a game then
-    if( typeof Object.keys(socket.rooms)[1] !== undefined){
+    if(typeof Object.keys(socket.rooms)[1] !== undefined){
       //add user to a game specific room
       socket.join(this.id, () => {
 
@@ -44,15 +44,12 @@ class Game{
                 console.error('Error:', error);
               });
           }
-          console.log("players")
-          console.log(typeof this.players);
           //add the creator to the list of players
           this.players.push(socket.player);
           //link the game object to the room
           io.sockets.adapter.rooms[this.id].game = this;
           //log to the console that the game has been created
           console.log(socket.player.user.firstName + " " + socket.player.user.lastName + " has created game: " + this.id );
-
           //emit to the game room that the game has been created
           io.to(this.id).emit('gameCreated',{message: "[" + this.id + "]: Game has been created", game:Game.cleanGame(this)});
 
@@ -73,8 +70,20 @@ class Game{
     delete socket.player.game;
   }
 
+  //check if the game is ready
+  ready(){
+    let gameReady = true;
+    this.players.forEach((p) => {
+      if(typeof p === 'string'){
+        gameReady = false;
+      }
+    });
+    return gameReady
+  }
+
   start(){
     //send push notifications to everyone
+    console.log("Game Ready");
   }
 
   //join game static method
@@ -82,8 +91,7 @@ class Game{
     //get the io object
     let io = socket.server;
     //if the room is defined
-    if(typeof io.sockets.adapter.rooms[id] !== undefined){
-      console.log(io.sockets.adapter.rooms[id])
+    if(io.sockets.adapter.rooms[id] != null){
       //get the game object from the room
       let game = io.sockets.adapter.rooms[id].game;
       //set the user's photo and game in the player object
@@ -97,13 +105,7 @@ class Game{
           game.players.splice(game.players.indexOf(socket.player.user.id), 1, socket.player);
           //emit to the room that the user has joined the game
           io.to(game.id).emit('userJoined', {message: "[" + game.id + "]: " + socket.player.user.firstName + " " + socket.player.user.lastName + " has joined.", game: Game.cleanGame(game) });
-          let gameReady = true;
-          game.players.forEach((p) => {
-            if(typeof p === 'string'){
-              gameReady = false;
-            }
-          });
-          if(gameReady){
+          if(game.ready()){
             game.start();
           }
         });
@@ -114,6 +116,29 @@ class Game{
     }else{
       //if the room is not defined then throw an error
       socket.emit("err", { type: "gameNotFound", message: "The game you are trying to connect to is not found."});
+    }
+  }
+
+  //decline game method to remove user from a game
+  static decline(socket, id){
+    //get the io object
+    let io = socket.server;
+    //if the room is defined
+    if( io.sockets.adapter.rooms[id] != null){
+      //get the game object
+      let game = io.sockets.adapter.rooms[id].game;
+      //remove player from the game
+      let pIndex = game.players.indexOf(socket.player.user.id)
+      if (pIndex > -1) {
+         game.players.splice(pIndex, 1);
+      }
+      //check if the game is ready to start
+      if(game.ready()){
+        game.start();
+      }
+    }else{
+      //if the room is not defined then throw an error
+      socket.emit("err", { type: "gameNotFound", message: "The game you are trying to decline is not found."});
     }
   }
 

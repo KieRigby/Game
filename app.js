@@ -92,6 +92,9 @@ io.on('connection', function(socket){
     Game.join(socket, game_id, photo);
   });
 
+  socket.on('declineGame', (data) => {
+    Game.decline(socket, data.id);
+  })
 
 
 
