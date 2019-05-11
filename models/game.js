@@ -40,7 +40,8 @@ class Game{
                 console.error('Error:', error);
               });
           }
-
+          console.log("players")
+          console.log(this.players);
           //add the creator to the list of players
           this.players.push(socket.player);
           //link the game object to the room
