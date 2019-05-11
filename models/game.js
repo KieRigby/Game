@@ -31,7 +31,11 @@ class Game{
                 fcm: {
                   notification: {
                     title: 'Game Invitation',
-                    body: "You've been invited to game " + this.id
+                    body: "You've been invited to game " + this.id,
+                    click_action: "JOIN_GAME"
+                  },
+                  data:{
+                    gameID: this.id
                   }
                 }
               }).then((publishResponse) => {
@@ -69,12 +73,17 @@ class Game{
     delete socket.player.game;
   }
 
+  start(){
+    //send push notifications to everyone
+  }
+
   //join game static method
   static join(socket, id, photo){
     //get the io object
     let io = socket.server;
     //if the room is defined
     if(typeof io.sockets.adapter.rooms[id] !== undefined){
+      console.log(io.sockets.adapter.rooms[id])
       //get the game object from the room
       let game = io.sockets.adapter.rooms[id].game;
       //set the user's photo and game in the player object
@@ -88,6 +97,15 @@ class Game{
           game.players.splice(game.players.indexOf(socket.player.user.id), 1, socket.player);
           //emit to the room that the user has joined the game
           io.to(game.id).emit('userJoined', {message: "[" + game.id + "]: " + socket.player.user.firstName + " " + socket.player.user.lastName + " has joined.", game: Game.cleanGame(game) });
+          let gameReady = true;
+          game.players.forEach((p) => {
+            if(typeof p === 'string'){
+              gameReady = false;
+            }
+          });
+          if(gameReady){
+            game.start();
+          }
         });
       }else{
         //if the player is not invited to the room then throw an error
