@@ -56,7 +56,7 @@ io.on('connection', function(socket){
   //when a user tries to create a game
   socket.on('createGame', (data) => {
     //get the data
-    let players = data.players;
+    let players = data.players.substring(1, data.players.length-1).split(",");
     let photo = data.photo;
     //try to make the game
     try{
