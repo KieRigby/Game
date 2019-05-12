@@ -29,53 +29,31 @@ class Game{
       socket.join(this.id, () => {
         //add creator as creator
         this.creator = socket.player.user;
-          for(let i = 0; i < this.players.length; i++){
-              //send push notification
-              beamsClient.publishToUsers(this.players, {
-                // fcm: {
-                //   notification: {
-                //     title: 'Game Invitation',
-                //     body: "You've been invited to game " + this.id,
-                //     click_action: "JOIN_GAME"
-                //   }
-                  // },
-                fcm: {
-                  data:{
-                    gameID: this.id,
-                    title: "Game Invitation",
-                    body: socket.player.user.firstName + " " + socket.player.user.lastName + " has invited you to a game",
-                    game: this
-                  }
-                }
-              }).then((publishResponse) => {
-                console.log('Sent notification to ' + this.players[i]);
-              }).catch((error) => {
-                console.error('Error:', error);
-              });
-              // //send push notification
-              // beamsClient.publishToUsers(this.players, {
-              //   fcm: {
-              //     notification: {
-              //       title: 'Game Invitation',
-              //       body: "You've been invited to game " + this.id,
-              //       click_action: "JOIN_GAME"
-              //     },
-              //   }
-              // }).then((publishResponse) => {
-              //   console.log('Sent notification to ' + this.players[i]);
-              // }).catch((error) => {
-              //   console.error('Error:', error);
-              // });
+        //send push notification
+        beamsClient.publishToUsers(this.players, {
+          fcm: {
+            data:{
+              gameID: this.id,
+              title: "Game Invitation",
+              body: socket.player.user.firstName + " " + socket.player.user.lastName + " has invited you to a game",
+              type: "GAME_INVITE",
+              game: this
+            }
           }
-          //add the creator to the list of players
-          this.joined.push(socket.player);
-          this.joinedCount +=1;
-          //link the game object to the room
-          io.sockets.adapter.rooms[this.id].game = this;
-          //log to the console that the game has been created
-          console.log(socket.player.user.firstName + " " + socket.player.user.lastName + " has created game: " + this.id );
-          //emit to the game room that the game has been created
-          io.to(this.id).emit('gameCreated',{message: "[" + this.id + "]: Game has been created", game:Game.cleanGame(this)});
+        }).then((publishResponse) => {
+          console.log('Sent notification for game invite');
+        }).catch((error) => {
+          console.error('Error:', error);
+        });
+        //add the creator to the list of players
+        this.joined.push(socket.player);
+        this.joinedCount +=1;
+        //link the game object to the room
+        io.sockets.adapter.rooms[this.id].game = this;
+        //log to the console that the game has been created
+        console.log(socket.player.user.firstName + " " + socket.player.user.lastName + " has created game: " + this.id );
+        //emit to the game room that the game has been created
+        io.to(this.id).emit('gameCreated',{message: "[" + this.id + "]: Game has been created", game:Game.cleanGame(this)});
 
       });
     }else{
@@ -113,7 +91,36 @@ class Game{
   }
 
   start(){
-    //send push notifications to everyone
+    //determine who is fugitive and bounty hunter
+    for(let i = 0; i < this.joined.length; i++){
+      if(i%2==0){
+        this.joined[i].type = 'Fugitive';
+      }else{
+        this.joined[i].type = 'Bounty Hunter';
+      }
+    }
+
+    let notify = []
+    this.joined.forEach((p) => {
+      notify.push(p.user.id);
+      console.log(p.user.firstName + " is a " + p.type);
+    });
+    console.log(notify);
+    //send push notification
+    beamsClient.publishToUsers(notify, {
+      fcm: {
+        data:{
+          gameID: this.id,
+          title: "Game Ready",
+          type: "GAME_READY",
+          body: "Your game is ready. Click here to join the lobby."
+        }
+      }
+    }).then((publishResponse) => {
+      console.log('Sent notification for game ready');
+    }).catch((error) => {
+      console.error('Error:', error);
+    });
     console.log("Game Ready");
   }
 

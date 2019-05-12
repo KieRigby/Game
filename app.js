@@ -118,7 +118,11 @@ io.on('connection', function(socket){
 
   socket.on('declineGame', (data) => {
     Game.decline(socket, data.id);
-  })
+  });
+
+  // socket.on('joinLobby', (data) => {
+  //
+  // })
 
 
 
