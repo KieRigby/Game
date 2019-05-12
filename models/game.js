@@ -24,10 +24,10 @@ class Game{
     if(typeof Object.keys(socket.rooms)[1] !== undefined){
       //add user to a game specific room
       socket.join(this.id, () => {
-          //add the creator to the list of players
-          this.players.push(socket.player);
-          //add creator as creator
-          this.creator = socket.player.user;
+        //add the creator to the list of players
+        this.players.push(socket.player);
+        //add creator as creator
+        this.creator = socket.player.user;
           for(let i = 0; i < this.players.length; i++){
               //send push notification
               beamsClient.publishToUsers(this.players, {
@@ -40,8 +40,8 @@ class Game{
                   // },
                   data:{
                     gameID: this.id,
-                    title: 'Game Invitation',
-                    body: this.creator.firstName + ' ' + this.creator.lastName + ' has invited you to a game',
+                    title: "Game Invitation",
+                    body: socket.player.user.firstName + " " + socket.player.user.lastName + " has invited you to a game"
                     // game: this
                   }
               }).then((publishResponse) => {
