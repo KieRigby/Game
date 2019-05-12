@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
+const fs = require('fs');
 const io = require('socket.io')(http);
 
 if(process.env.NODE_ENV == 'development'){
@@ -39,6 +40,12 @@ http.listen(PORT, function(){
   console.log('Game server listening on *:' + PORT);
 });
 
+// let dir = './state'
+//
+// if (!fs.existsSync(dir)){
+//     fs.mkdirSync(dir);
+// }
+
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -52,6 +59,9 @@ io.use(checkAuth);
 io.on('connection', function(socket){
   //log the user to the server console
   console.log(socket.player.user.firstName + ' ' + socket.player.user.lastName + ' connected');
+
+  //log what rooms the user is in:
+  console.log(Object.keys(socket.rooms))
 
   //when a user tries to create a game
   socket.on('createGame', (data) => {
@@ -100,6 +110,8 @@ io.on('connection', function(socket){
 
 
   socket.on('disconnect', function(){
+    data = {}
+    // fs.writeFileSync('./state/'+socket.player.user.id+'.json', JSON.stringify({rooms: socket.rooms}));
     console.log(socket.player.user.firstName + ' ' + socket.player.user.lastName + ' disconnected')
   });
 });
