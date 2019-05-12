@@ -120,12 +120,12 @@ io.on('connection', function(socket){
     Game.decline(socket, data.id);
   });
 
-  // socket.on('joinLobby', (data) => {
-  //   if(typeof Object.keys(socket.rooms)[1] !== undefined){
-  //     let game = io.sockets.adapter.rooms[String(Object.keys(socket.rooms)[1])].game;
-  //     game.joinLobby(socket, )
-  //   }
-  // })
+  socket.on('joinLobby', (data) => {
+    if(typeof Object.keys(socket.rooms)[1] !== undefined){
+      let game = io.sockets.adapter.rooms[String(Object.keys(socket.rooms)[1])].game;
+      game.joinLobby(socket, data)
+    }
+  })
 
 
 

@@ -15,8 +15,10 @@ class Game{
     this.id = uuid();
     this.invitedCount = players.length;
     this.players = players;
-    this.joinedCount = 0;
+    this.acceptedCount = 0;
+    this.accepted = [];
     this.joined = [];
+    this.readyToStart = false;
   }
 
   //create game method
@@ -47,8 +49,8 @@ class Game{
           console.error('Error:', error);
         });
         //add the creator to the list of players
-        this.joined.push(socket.player);
-        this.joinedCount +=1;
+        this.accepted.push(socket.player);
+        this.acceptedCount +=1;
         //link the game object to the room
         io.sockets.adapter.rooms[this.id].game = this;
         //log to the console that the game has been created
@@ -68,15 +70,30 @@ class Game{
     let io = socket.server;
     //if it's a temporary leave then we can set the player's element in the players array to their id
     if(tempLeave){
-      let pIndex = this.joined.indexOf(socket.player)
-      this.joined.splice(pIndex, 1);
-      this.players.push(socket.player.user.id);
-      this.joinedCount -= 1;
-      this.invitedCount += 1;
+      if(this.ready){
+        //remove from joined to accepted
+        let pIndex = this.joined.indexOf(socket.player)
+        if(pIndex != -1){
+          this.joined.splice(pIndex, 1);
+          this.accepted.push(socket.player);
+          this.acceptedCount += 1;
+        }
+      }else{
+        let pIndex = this.accepted.indexOf(socket.player)
+        this.accepted.splice(pIndex, 1);
+        this.players.push(socket.player.user.id);
+        this.acceptedCount -= 1;
+        this.invitedCount += 1;
+      }
     }else{
-      let pIndex = this.players.indexOf(socket.player)
-      this.joined.splice(pIndex, 1);
-      this.joinedCount -= 1;
+      let pIndex = this.accepted.indexOf(socket.player);
+      if(pIndex == -1){
+        pIndex = this.joined.indexOf(socket.player);
+        this.joined.splice(pIndex, 1);
+      }else{
+        this.accepted.splice(pIndex, 1);
+        this.acceptedCount -= 1;
+      }
     }
     //remove the player from the game room
     socket.leave(this.id);
@@ -86,30 +103,46 @@ class Game{
     socket.emit('gameLeft', {message:"Left game " + this.id});
   }
 
-  // joinLobby(socket, pos){
-  //   //update the position for the player
-  //   this.
-  //   //send the game object
-  //   socket.emit('joinedLobby', {game: this})
-  // }
+  joinLobby(socket, pos){
+    let pIndex = this.accepted.indexOf(socket.player)
+    this.accepted.splice(pIndex, 1);
+    this.acceptedCount -= 1;
+    this.joined.push(socket.player);
+    //update the position for the player
+    this.joined[this.joined.indexOf(socket.player)].location = pos;
+    //send the game object
+    socket.emit('joinedLobby', {message: "You have joined the lobby",game: this});
+    if(this.lobbyReady()){
+      this.start()
+    }
+  }
 
   //check if the game is ready
   ready(){
     return (this.invitedCount == 0)
   }
 
+  lobbyReady(){
+    return (this.acceptedCount == 0)
+  }
+
   start(){
+    console.log("GAME STARTED.")
+  }
+
+  startLobby(){
+    this.readyToStart = true;
     //determine who is fugitive and bounty hunter
-    for(let i = 0; i < this.joined.length; i++){
+    for(let i = 0; i < this.accepted.length; i++){
       if(i%2==0){
-        this.joined[i].type = 'Fugitive';
+        this.accepted[i].type = 'Fugitive';
       }else{
-        this.joined[i].type = 'Bounty Hunter';
+        this.accepted[i].type = 'Bounty Hunter';
       }
     }
 
     let notify = []
-    this.joined.forEach((p) => {
+    this.accepted.forEach((p) => {
       notify.push(p.user.id);
       console.log(p.user.firstName + " is a " + p.type);
     });
@@ -146,18 +179,19 @@ class Game{
       if(game.players.includes(socket.player.user.id)){
         //add player to the room
         socket.join(game.id, () => {
-          //replace the id with the players full object
+          //remove the id with the players full object
           game.players.splice(game.players.indexOf(socket.player.user.id), 1);
           game.invitedCount -= 1;
           //add to joined array
-          game.joined.push(socket.player);
-          game.joinedCount += 1;
+          game.accepted.push(socket.player);
+          game.acceptedCount += 1;
           //emit to the room that the user has joined the game
           io.to(game.id).emit('userJoined', {message: "[" + game.id + "]: " + socket.player.user.firstName + " " + socket.player.user.lastName + " has joined.", game: Game.cleanGame(game) });
           //inform the user they have joined the game successfully.
           socket.emit('gameJoined', {message:"Joined game " + game.id});
+          console.log(game);
           if(game.ready()){
-            game.start();
+            game.startLobby();
           }
         });
       }else{
@@ -191,7 +225,7 @@ class Game{
       socket.emit('gameDeclined', {message:"Declined game " + game.id});
       //check if the game is ready to start
       if(game.ready()){
-        game.start();
+        game.startLobby();
       }
     }else{
       //if the room is not defined then throw an error
@@ -206,7 +240,16 @@ class Game{
     delete gameCopy.creator.active;
     delete gameCopy.creator.email;
     delete gameCopy.creator.verified;
-    gameCopy.players.forEach((p) => {
+    gameCopy.joined.forEach((p) => {
+      delete p.token;
+      if (p.hasOwnProperty("user")){
+        delete p.user.password;
+        delete p.user.active;
+        delete p.user.email;
+        delete p.user.verified;
+      }
+    })
+    gameCopy.accepted.forEach((p) => {
       delete p.token;
       if (p.hasOwnProperty("user")){
         delete p.user.password;
