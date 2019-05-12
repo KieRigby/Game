@@ -29,11 +29,11 @@ class Game{
               //send push notification
               beamsClient.publishToUsers(this.players, {
                 fcm: {
-                  // notification: {
-                  //   title: 'Game Invitation',
-                  //   body: "You've been invited to game " + this.id,
-                  //   click_action: "JOIN_GAME"
-                  // },
+                  notification: {
+                    title: 'Game Invitation',
+                    body: "You've been invited to game " + this.id,
+                    click_action: "JOIN_GAME"
+                  },
                   data:{
                     gameID: this.id
                   }
@@ -43,20 +43,20 @@ class Game{
               }).catch((error) => {
                 console.error('Error:', error);
               });
-              //send push notification
-              beamsClient.publishToUsers(this.players, {
-                fcm: {
-                  notification: {
-                    title: 'Game Invitation',
-                    body: "You've been invited to game " + this.id,
-                    click_action: "JOIN_GAME"
-                  },
-                }
-              }).then((publishResponse) => {
-                console.log('Sent notification to ' + this.players[i]);
-              }).catch((error) => {
-                console.error('Error:', error);
-              });
+              // //send push notification
+              // beamsClient.publishToUsers(this.players, {
+              //   fcm: {
+              //     notification: {
+              //       title: 'Game Invitation',
+              //       body: "You've been invited to game " + this.id,
+              //       click_action: "JOIN_GAME"
+              //     },
+              //   }
+              // }).then((publishResponse) => {
+              //   console.log('Sent notification to ' + this.players[i]);
+              // }).catch((error) => {
+              //   console.error('Error:', error);
+              // });
           }
           //add the creator to the list of players
           this.players.push(socket.player);
