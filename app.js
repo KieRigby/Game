@@ -20,6 +20,7 @@ if(process.env.NODE_ENV == 'development'){
 
 //include middleware
 const checkAuth = require('./middleware/check-auth');
+const checkState = require('./middleware/check-state');
 
 //include models
 const Player = require('./models/player');
@@ -40,18 +41,18 @@ http.listen(PORT, function(){
   console.log('Game server listening on *:' + PORT);
 });
 
-// let dir = './state'
-//
-// if (!fs.existsSync(dir)){
-//     fs.mkdirSync(dir);
-// }
+let dir = './state'
+
+if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir);
+}
 
 /////////////////////////////////////////////////////////////////////////
 
 
 //set up socket io to use some middleware so only authenticated users can connect.
 io.use(checkAuth);
-
+io.use(checkState);
 
 // SOCKET IO GAME STUFF STARTS HERE
 /////////////////////////////////////////////////////////////////////////
@@ -60,15 +61,19 @@ io.on('connection', function(socket){
   //log the user to the server console
   console.log(socket.player.user.firstName + ' ' + socket.player.user.lastName + ' connected');
 
-  //log what rooms the user is in:
-  console.log(Object.keys(socket.rooms))
-
-  // socket.onclose = function(reason){
-  //     //emit to rooms here
-  //     console.log("here");
-  //     fs.writeFileSync('./state/'+socket.player.user.id+'.json', JSON.stringify({rooms: socket.rooms}));
-  //     Object.getPrototypeOf(this).onclose.call(this,reason);
-  // }
+  socket.onclose = function(reason){
+      //emit to rooms here
+      if(Object.keys(socket.rooms).length > 1){
+        if(typeof Object.keys(socket.rooms)[1] !== undefined){
+          let game = io.sockets.adapter.rooms[String(Object.keys(socket.rooms)[1])].game;
+          game.leave(socket,true);
+        }
+        fs.writeFileSync('./state/'+socket.player.user.id+'.json', JSON.stringify({game: Object.keys(socket.rooms)[1], photo: socket.player.photo}));
+      }else{
+        fs.writeFileSync('./state/'+socket.player.user.id+'.json', JSON.stringify({game: "", photo:""}));
+      }
+      Object.getPrototypeOf(this).onclose.call(this,reason);
+  }
 
   //when a user tries to create a game
   socket.on('createGame', (data) => {
@@ -96,8 +101,10 @@ io.on('connection', function(socket){
 
   //when a user tries to leave a game
   socket.on('leaveGame', () => {
-    //leave the game
-    socket.player.game.leave(socket);
+    if(typeof Object.keys(socket.rooms)[1] !== undefined){
+      let game = io.sockets.adapter.rooms[String(Object.keys(socket.rooms)[1])].game;
+      game.leave(socket,false);
+    }
   });
 
   //when a user tries to join a game

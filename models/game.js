@@ -60,6 +60,8 @@ class Game{
           }
           //add the creator to the list of players
           this.players.push(socket.player);
+          //add creator as creator
+          this.creator = socket.player.user;
           //link the game object to the room
           io.sockets.adapter.rooms[this.id].game = this;
           //log to the console that the game has been created
@@ -75,13 +77,22 @@ class Game{
   }
 
   //leave game method
-  leave(socket){
+  leave(socket, tempLeave){
+    let io = socket.server;
+    //if it's a temporary leave then we can set the player's element in the players array to their id
+    if(tempLeave){
+      let pIndex = this.players.indexOf(socket.player)
+      this.players.splice(pIndex, 1, socket.player.user.id);
+    }else{
+      let pIndex = this.players.indexOf(socket.player)
+      this.players.splice(pIndex, 1);
+    }
     //remove the player from the game room
     socket.leave(this.id);
+    //emit to the room that the user has left
+    io.to(this.id).emit('userLeft',{message: "[" + this.id + "]: " + socket.player.user.firstName + " " + socket.player.user.lastName + " has left the game.", game:Game.cleanGame(this)});
     //inform the user they have left the game successfully.
-    socket.emit('gameLeft', {message:"Left game " + socket.player.game.id});
-    //delete the game key on the player object.
-    delete socket.player.game;
+    socket.emit('gameLeft', {message:"Left game " + this.id});
   }
 
   //check if the game is ready
@@ -119,6 +130,8 @@ class Game{
           game.players.splice(game.players.indexOf(socket.player.user.id), 1, socket.player);
           //emit to the room that the user has joined the game
           io.to(game.id).emit('userJoined', {message: "[" + game.id + "]: " + socket.player.user.firstName + " " + socket.player.user.lastName + " has joined.", game: Game.cleanGame(game) });
+          //inform the user they have joined the game successfully.
+          socket.emit('gameJoined', {message:"Joined game " + game.id});
           if(game.ready()){
             game.start();
           }
@@ -147,6 +160,10 @@ class Game{
          game.players.splice(pIndex, 1);
       }
       console.log("[" + game.id + "]: " + socket.player.user.firstName + " " + socket.player.user.lastName + " has declined the invitation to game " + game.id +".")
+      //emit to the room that the user has joined the game
+      io.to(game.id).emit('userDeclined', {message: "[" + game.id + "]: " + socket.player.user.firstName + " " + socket.player.user.lastName + " has declined the game invitation.", game: Game.cleanGame(game) });
+      //inform the user they have joined the game successfully.
+      socket.emit('gameDeclined', {message:"Declined game " + game.id});
       //check if the game is ready to start
       if(game.ready()){
         game.start();
@@ -160,6 +177,10 @@ class Game{
   //clean game method (strips out the tokens or any features that user could use to abuse the system)
   static cleanGame(game){
     let gameCopy = game;
+    delete gameCopy.creator.password;
+    delete gameCopy.creator.active;
+    delete gameCopy.creator.email;
+    delete gameCopy.creator.verified;
     gameCopy.players.forEach((p) => {
       delete p.token;
       if (p.hasOwnProperty("user")){

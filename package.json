@@ -8,6 +8,9 @@
     "start": "node app.js",
     "dev": "NODE_ENV=development nodemon app.js"
   },
+  "nodemonConfig": {
+    "ignore":["state/*.json"]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/com2027/Game.git"
