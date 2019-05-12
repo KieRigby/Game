@@ -33,14 +33,14 @@ class Game{
                 //     title: 'Game Invitation',
                 //     body: "You've been invited to game " + this.id,
                 //     click_action: "JOIN_GAME"
-                //   },
+                //   }
+                  // },
                   data:{
                     gameID: this.id,
                     title: 'Game Invitation',
                     body: this.creator.firstName + ' ' + this.creator.lastName + ' has invited you to a game',
                     game: this
                   }
-                }
               }).then((publishResponse) => {
                 console.log('Sent notification to ' + this.players[i]);
               }).catch((error) => {
