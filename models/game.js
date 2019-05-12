@@ -13,7 +13,10 @@ class Game{
 
   constructor(players){
     this.id = uuid();
+    this.invitedCount = players.length;
     this.players = players;
+    this.joinedCount = 0;
+    this.joined = [];
   }
 
   //create game method
@@ -65,7 +68,8 @@ class Game{
               // });
           }
           //add the creator to the list of players
-          this.players.push(socket.player);
+          this.joined.push(socket.player);
+          this.joinedCount +=1;
           //link the game object to the room
           io.sockets.adapter.rooms[this.id].game = this;
           //log to the console that the game has been created
@@ -85,11 +89,15 @@ class Game{
     let io = socket.server;
     //if it's a temporary leave then we can set the player's element in the players array to their id
     if(tempLeave){
-      let pIndex = this.players.indexOf(socket.player)
-      this.players.splice(pIndex, 1, socket.player.user.id);
+      let pIndex = this.joined.indexOf(socket.player)
+      this.joined.splice(pIndex, 1);
+      this.players.push(socket.player.user.id);
+      this.joinedCount -= 1;
+      this.invitedCount += 1;
     }else{
       let pIndex = this.players.indexOf(socket.player)
-      this.players.splice(pIndex, 1);
+      this.joined.splice(pIndex, 1);
+      this.joinedCount -= 1;
     }
     //remove the player from the game room
     socket.leave(this.id);
@@ -101,13 +109,7 @@ class Game{
 
   //check if the game is ready
   ready(){
-    let gameReady = true;
-    this.players.forEach((p) => {
-      if(typeof p === 'string'){
-        gameReady = false;
-      }
-    });
-    return gameReady
+    return (this.invitedCount == 0)
   }
 
   start(){
@@ -125,13 +127,16 @@ class Game{
       let game = io.sockets.adapter.rooms[id].game;
       //set the user's photo and game in the player object
       socket.player.photo = photo;
-      // socket.player.game = game;
       //if the invited players array contains the user's id who is trying to connect
       if(game.players.includes(socket.player.user.id)){
         //add player to the room
         socket.join(game.id, () => {
           //replace the id with the players full object
-          game.players.splice(game.players.indexOf(socket.player.user.id), 1, socket.player);
+          game.players.splice(game.players.indexOf(socket.player.user.id), 1);
+          game.invitedCount -= 1;
+          //add to joined array
+          game.joined.push(socket.player);
+          game.joinedCount += 1;
           //emit to the room that the user has joined the game
           io.to(game.id).emit('userJoined', {message: "[" + game.id + "]: " + socket.player.user.firstName + " " + socket.player.user.lastName + " has joined.", game: Game.cleanGame(game) });
           //inform the user they have joined the game successfully.
@@ -162,6 +167,7 @@ class Game{
       let pIndex = game.players.indexOf(socket.player.user.id)
       if (pIndex > -1) {
          game.players.splice(pIndex, 1);
+         game.invitedCount -= 1;
       }
       console.log("[" + game.id + "]: " + socket.player.user.firstName + " " + socket.player.user.lastName + " has declined the invitation to game " + game.id +".")
       //emit to the room that the user has joined the game
