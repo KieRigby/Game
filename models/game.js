@@ -28,14 +28,17 @@ class Game{
           for(let i = 0; i < this.players.length; i++){
               //send push notification
               beamsClient.publishToUsers(this.players, {
-                fcm: {
-                  notification: {
-                    title: 'Game Invitation',
-                    body: "You've been invited to game " + this.id,
-                    click_action: "JOIN_GAME"
-                  },
+                // fcm: {
+                //   notification: {
+                //     title: 'Game Invitation',
+                //     body: "You've been invited to game " + this.id,
+                //     click_action: "JOIN_GAME"
+                //   },
                   data:{
-                    gameID: this.id
+                    gameID: this.id,
+                    title: 'Game Invitation',
+                    body: this.creator.firstName + ' ' + this.creator.lastName + ' has invited you to a game',
+                    game: this
                   }
                 }
               }).then((publishResponse) => {
