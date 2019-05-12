@@ -146,6 +146,7 @@ class Game{
       if (pIndex > -1) {
          game.players.splice(pIndex, 1);
       }
+      console.log("[" + game.id + "]: " + socket.player.user.firstName + " " + socket.player.user.lastName + " has declined the invitation to game " + game.id +".")
       //check if the game is ready to start
       if(game.ready()){
         game.start();

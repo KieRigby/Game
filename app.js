@@ -63,6 +63,13 @@ io.on('connection', function(socket){
   //log what rooms the user is in:
   console.log(Object.keys(socket.rooms))
 
+  // socket.onclose = function(reason){
+  //     //emit to rooms here
+  //     console.log("here");
+  //     fs.writeFileSync('./state/'+socket.player.user.id+'.json', JSON.stringify({rooms: socket.rooms}));
+  //     Object.getPrototypeOf(this).onclose.call(this,reason);
+  // }
+
   //when a user tries to create a game
   socket.on('createGame', (data) => {
     //get the data
@@ -110,8 +117,6 @@ io.on('connection', function(socket){
 
 
   socket.on('disconnect', function(){
-    data = {}
-    // fs.writeFileSync('./state/'+socket.player.user.id+'.json', JSON.stringify({rooms: socket.rooms}));
     console.log(socket.player.user.firstName + ' ' + socket.player.user.lastName + ' disconnected')
   });
 });
