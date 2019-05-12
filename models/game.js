@@ -24,7 +24,10 @@ class Game{
     if(typeof Object.keys(socket.rooms)[1] !== undefined){
       //add user to a game specific room
       socket.join(this.id, () => {
-
+          //add the creator to the list of players
+          this.players.push(socket.player);
+          //add creator as creator
+          this.creator = socket.player.user;
           for(let i = 0; i < this.players.length; i++){
               //send push notification
               beamsClient.publishToUsers(this.players, {
@@ -61,10 +64,6 @@ class Game{
               //   console.error('Error:', error);
               // });
           }
-          //add the creator to the list of players
-          this.players.push(socket.player);
-          //add creator as creator
-          this.creator = socket.player.user;
           //link the game object to the room
           io.sockets.adapter.rooms[this.id].game = this;
           //log to the console that the game has been created
