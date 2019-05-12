@@ -123,7 +123,7 @@ class Game{
   }
 
   lobbyReady(){
-    return (this.acceptedCount == 0)
+    return (this.acceptedCount == 0 && this.joined.length == this.totalPlayers);
   }
 
   start(){
@@ -132,6 +132,7 @@ class Game{
 
   startLobby(){
     this.readyToStart = true;
+    this.totalPlayers = this.acceptedCount
     //determine who is fugitive and bounty hunter
     for(let i = 0; i < this.accepted.length; i++){
       if(i%2==0){
