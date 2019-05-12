@@ -29,6 +29,7 @@ class Game{
       socket.join(this.id, () => {
         //add creator as creator
         this.creator = socket.player.user;
+        console.log(this.players);
         //send push notification
         beamsClient.publishToUsers(this.players, {
           fcm: {
@@ -84,6 +85,13 @@ class Game{
     //inform the user they have left the game successfully.
     socket.emit('gameLeft', {message:"Left game " + this.id});
   }
+
+  // joinLobby(socket, pos){
+  //   //update the position for the player
+  //   this.
+  //   //send the game object
+  //   socket.emit('joinedLobby', {game: this})
+  // }
 
   //check if the game is ready
   ready(){
