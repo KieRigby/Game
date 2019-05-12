@@ -36,12 +36,14 @@ class Game{
                 //     click_action: "JOIN_GAME"
                 //   }
                   // },
+                fcm: {
                   data:{
                     gameID: this.id,
                     title: "Game Invitation",
                     body: socket.player.user.firstName + " " + socket.player.user.lastName + " has invited you to a game",
                     game: this
                   }
+                }
               }).then((publishResponse) => {
                 console.log('Sent notification to ' + this.players[i]);
               }).catch((error) => {
