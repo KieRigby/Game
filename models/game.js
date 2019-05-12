@@ -42,7 +42,7 @@ class Game{
                     gameID: this.id,
                     title: 'Game Invitation',
                     body: this.creator.firstName + ' ' + this.creator.lastName + ' has invited you to a game',
-                    game: this
+                    // game: this
                   }
               }).then((publishResponse) => {
                 console.log('Sent notification to ' + this.players[i]);
