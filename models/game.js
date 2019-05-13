@@ -136,7 +136,7 @@ class Game{
     console.log("Starting game + " +  this.id);
     // console.log("Users:" + io.sockets.clients(this.id))
     //emit to the room that the game has started
-    io.to(this.id).emit('gameStarted',{message: "Game Starting", game:Game.cleanGame(this)});
+    io.in(this.id).emit('gameStarted',{message: "Game Starting", game:Game.cleanGame(this)});
 
     console.log("GAME STARTED.")
   }
