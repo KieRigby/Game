@@ -127,6 +127,10 @@ class Game{
   }
 
   start(){
+    //emit to the room that the game has started
+    io.to(this.id).emit('gameStarted',{message: "Game Starting", game:Game.cleanGame(this)});
+    //calculate center point and radius
+
     console.log("GAME STARTED.")
   }
 
@@ -165,6 +169,39 @@ class Game{
     });
     console.log("Game Ready");
   }
+
+
+
+
+
+  // calcRadius(){
+  //   let latTotal = 0;
+  //   let longTotal = 0;
+  //   this.joined.forEach((p) => {
+  //     latTotal += p.latitude;
+  //     longTotal += p.longitude;
+  //   })
+  //   let aveLat = latTotal / players.length;
+  //   let aveLong = longTotal / players.length;
+  //
+  //   let maxDist = 0;
+  //   players.forEach((p) => {
+  //     dist = Math.sqrt(Math.pow(aveLat - p.latitude,2) + Math.pow(aveLong - p.longitude,2))
+  //     if(dist > maxDist){
+  //       maxDist = dist;
+  //     }
+  //   });
+  //
+  //   return {center: {lang: aveLang, long: aveLong}, radius: maxDist + 5};
+  //
+  // }
+
+
+
+
+
+
+
 
   //join game static method
   static join(socket, id, photo){
