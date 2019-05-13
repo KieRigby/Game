@@ -129,8 +129,15 @@ class Game{
   update(socket, data){
     console.log("Updating game for " + socket.player.user.firstName);
     let io = socket.server;
-    let location = data.location;
-    this.joined[this.joined.indexOf(socket.player)].location = location;
+    //get the data from
+    // let location = data.location;
+    this.joined[this.joined.indexOf(socket.player)].location = data;
+
+    //calculate center point and radius
+    let geoData = this.calcRadius();
+
+    this.radius = geoData.radius;
+    this.center = geoData.center;
     //emit to the room that the game has started
     io.in(this.id).emit('gameUpdate',{message: "Game Updating", game:Game.cleanGame(this)});
   }
@@ -209,7 +216,7 @@ class Game{
       }
     });
 
-    return {center: {lat: aveLat, long: aveLong}, radius: maxDist + 5};
+    return {center: {lat: aveLat, long: aveLong}, radius: maxDist + 10};
 
   }
 
