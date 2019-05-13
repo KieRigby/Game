@@ -129,18 +129,38 @@ class Game{
   update(socket, data){
     console.log("Updating game for " + socket.player.user.firstName);
     let io = socket.server;
-    //get the data from
-    // let location = data.location;
+    //update the location for the player sending the request
     this.joined[this.joined.indexOf(socket.player)].location = data;
+    // let arrowInfo = this.findArrows(socket);
 
-    //calculate center point and radius
-    let geoData = this.calcRadius();
-
-    this.radius = geoData.radius;
-    this.center = geoData.center;
     //emit to the room that the game has started
     io.in(this.id).emit('gameUpdate',{message: "Game Updating", game:Game.cleanGame(this)});
   }
+
+  // findArrows(socket){
+  //   let findFor = this.joined[this.joined.indexOf(socket.player)].location
+  //   let joinedCopy = this.joined;
+  //   joinedCopy.forEach((p) => {
+  //     if(p.user.id != socket.player.user.id){
+  //       let against = p.location
+  //       let magnitude = Math.sqrt(Math.pow(against.lat-findFor.lat, 2) + Math.pow(against.long - findFor.long, 2))
+  //       let angle = 0;
+  //       if(against.long - findFor.long != 0){
+  //         angle = Math.atan( (against.lat - findFor.lat) / (against.long - findFor.long) )
+  //       }
+  //       p.guide = {magnitude:this.scale(magnitude,0,this.radius,0,1), angle: this.toDegrees(angle)}
+  //       console.log(p.guide);
+  //     }
+  //   });
+  // }
+  //
+  // scale(num, in_min, in_max, out_min, out_max){
+  //   return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  // }
+  //
+  // toDegrees (angle) {
+  //   return angle * (180 / Math.PI);
+  // }
 
   start(socket){
     let io = socket.server;
