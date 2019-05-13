@@ -122,8 +122,10 @@ io.on('connection', function(socket){
   });
 
   socket.on('joinLobby', (data) => {
-    if(typeof Object.keys(socket.rooms)[1] !== undefined){
-      let game = io.sockets.adapter.rooms[String(Object.keys(socket.rooms)[1])].game;
+    //if the room is defined
+    if(io.sockets.adapter.rooms[id] != null){
+      //get the game object from the room
+      let game = io.sockets.adapter.rooms[id].game;
       game.joinLobby(socket, data)
     }
   })
