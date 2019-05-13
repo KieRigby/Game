@@ -127,6 +127,7 @@ class Game{
   }
 
   update(socket, data){
+    let io = socket.server;
     let location = data.location;
     this.joined[this.joined.indexOf(socket.player)].location = location;
     //emit to the room that the game has started
