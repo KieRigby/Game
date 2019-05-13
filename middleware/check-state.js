@@ -9,6 +9,7 @@ module.exports = (socket,next) => {
       if (err) throw err;
       let dataObj = JSON.parse(data);
       if(dataObj.game !== ""){
+        console.log(socket.player.user.firstName + " is joining " + dataObj.game );
         Game.join(socket, dataObj.game, dataObj.photo);
       }
     });

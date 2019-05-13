@@ -66,6 +66,7 @@ io.on('connection', function(socket){
       if(Object.keys(socket.rooms).length > 1){
         if(typeof Object.keys(socket.rooms)[1] !== undefined){
           let game = io.sockets.adapter.rooms[String(Object.keys(socket.rooms)[1])].game;
+          console.log(socket.player.user.firstName + " is leaving " + game.id);
           game.leave(socket,true);
         }
         fs.writeFileSync('./state/'+socket.player.user.id+'.json', JSON.stringify({game: Object.keys(socket.rooms)[1], photo: socket.player.photo}));
