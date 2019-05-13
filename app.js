@@ -132,6 +132,15 @@ io.on('connection', function(socket){
   })
 
 
+  socket.on('locationUpdate', (data) => {
+    let game_id = Object.keys(socket.rooms)[1]
+    //if the room is defined
+    if(io.sockets.adapter.rooms[game_id] != null){
+      //get the game object from the room
+      let game = io.sockets.adapter.rooms[game_id].game;
+      game.update(socket, data)
+    }
+  })
 
 
   socket.on('disconnect', function(){

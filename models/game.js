@@ -126,6 +126,13 @@ class Game{
     return (this.acceptedCount == 0 && this.joined.length == this.totalPlayers);
   }
 
+  update(socket, data){
+    let location = data.location;
+    this.joined[this.joined.indexOf(socket.player)].location = location;
+    //emit to the room that the game has started
+    io.in(this.id).emit('gameUpdate',{message: "Game Updating", game:Game.cleanGame(this)});
+  }
+
   start(socket){
     let io = socket.server;
     //calculate center point and radius
