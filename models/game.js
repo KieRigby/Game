@@ -128,9 +128,13 @@ class Game{
 
   start(socket){
     let io = socket.server;
+    //calculate center point and radius
+    let geoData = this.calcRadius();
+
+    this.radius = geoData.radius;
+    this.center = geoData.center;
     //emit to the room that the game has started
     io.to(this.id).emit('gameStarted',{message: "Game Starting", game:Game.cleanGame(this)});
-    //calculate center point and radius
 
     console.log("GAME STARTED.")
   }
@@ -175,27 +179,28 @@ class Game{
 
 
 
-  // calcRadius(){
-  //   let latTotal = 0;
-  //   let longTotal = 0;
-  //   this.joined.forEach((p) => {
-  //     latTotal += p.latitude;
-  //     longTotal += p.longitude;
-  //   })
-  //   let aveLat = latTotal / players.length;
-  //   let aveLong = longTotal / players.length;
-  //
-  //   let maxDist = 0;
-  //   players.forEach((p) => {
-  //     dist = Math.sqrt(Math.pow(aveLat - p.latitude,2) + Math.pow(aveLong - p.longitude,2))
-  //     if(dist > maxDist){
-  //       maxDist = dist;
-  //     }
-  //   });
-  //
-  //   return {center: {lang: aveLang, long: aveLong}, radius: maxDist + 5};
-  //
-  // }
+  calcRadius(){
+    let latTotal = 0;
+    let longTotal = 0;
+    this.joined.forEach((p) => {
+      latTotal += p.location.lat;
+      longTotal += p.location.long;
+    })
+    let aveLat = latTotal / this.joined.length;
+    let aveLong = longTotal / this.joined.length;
+
+
+    let maxDist = 0;
+    this.joined.forEach((p) => {
+      let dist = Math.sqrt(Math.pow(aveLat - p.location.lat,2) + Math.pow(aveLong - p.location.long,2))
+      if(dist > maxDist){
+        maxDist = dist;
+      }
+    });
+
+    return {center: {lat: aveLat, long: aveLong}, radius: maxDist + 5};
+
+  }
 
 
 
