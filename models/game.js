@@ -113,7 +113,7 @@ class Game{
     //send the game object
     socket.emit('joinedLobby', {message: "You have joined the lobby",game: this});
     if(this.lobbyReady()){
-      this.start()
+      this.start(socket)
     }
   }
 
@@ -126,7 +126,8 @@ class Game{
     return (this.acceptedCount == 0 && this.joined.length == this.totalPlayers);
   }
 
-  start(){
+  start(socket){
+    let io = socket.server;
     //emit to the room that the game has started
     io.to(this.id).emit('gameStarted',{message: "Game Starting", game:Game.cleanGame(this)});
     //calculate center point and radius
