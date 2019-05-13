@@ -127,6 +127,7 @@ class Game{
   }
 
   update(socket, data){
+    console.log("Updating game for " + socket.player.user.firstName);
     let io = socket.server;
     let location = data.location;
     this.joined[this.joined.indexOf(socket.player)].location = location;
